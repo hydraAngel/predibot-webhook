@@ -38,8 +38,15 @@ def run_assistant(user_id: str, text: str) -> str:
     # 5) Recupera todas as mensagens e encontra a última do assistant
     msgs = client.beta.threads.messages.list(thread_id=thread_id).data
     assistant_texts = [m.content[0].text.value for m in msgs if m.role == "assistant"]
+    cleaned = [
+        txt
+        for txt in assistant_texts
+        if not txt.strip().lower().startswith(("olá", "bom dia", "boa tarde"))
+    ]
     print("📜 Mensagens: ", [(m.role, m.content) for m in msgs])
     fallback_message = f"⚠️ PrediBot falhou: {getattr(run, 'error', 'sem detalhes')}"
+    if cleaned:
+        return cleaned[-1]
     return assistant_texts[-1] if assistant_texts else fallback_message
 
 
