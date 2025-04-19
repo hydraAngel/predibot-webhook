@@ -37,14 +37,10 @@ def run_assistant(user_id: str, text: str) -> str:
     print("⏱️ Run concluido: ", run)
     # 5) Recupera todas as mensagens e encontra a última do assistant
     msgs = client.beta.threads.messages.list(thread_id=thread_id).data
+    assistant_texts = [m.content[0].text.value for m in msgs if m.role == "assistant"]
     print("📜 Mensagens: ", [(m.role, m.content) for m in msgs])
-    for m in reversed(msgs):
-        if m.role == "assistant":
-            # retorna o texto gerado
-            return m.content[0].text.value
-
-    if run.status == "failed":
-        return f"⚠️ PrediBot falhou: {getattr(run, 'error', 'sem detalhes')}"
+    fallback_message = f"⚠️ PrediBot falhou: {getattr(run, 'error', 'sem detalhes')}"
+    return assistant_texts[-1] if assistant_texts else fallback_message
 
 
 @app.route("/whats", methods=["POST"])
